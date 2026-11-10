@@ -25,17 +25,17 @@ export function IngredientCard({
   );
 
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-2 p-3 text-center">
-      <span aria-hidden="true" className="text-5xl leading-none">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-1 text-center sm:gap-1.5">
+      <span aria-hidden="true" className="text-4xl leading-none sm:text-6xl">
         {ingredient.emoji ?? "🛒"}
       </span>
       <p
         data-testid={nameTestId}
-        className="text-xl font-semibold leading-tight tracking-tight text-zinc-950 dark:text-zinc-50"
+        className="min-h-10 w-full break-words text-balance text-center text-sm font-semibold leading-tight text-zinc-950 sm:min-h-13 sm:text-xl dark:text-zinc-50"
       >
         {ingredient.name}
       </p>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="hidden text-sm text-zinc-500 sm:block dark:text-zinc-400">
         {ingredient.aisle}
       </p>
       <div
@@ -55,7 +55,7 @@ export function IngredientCard({
           />
         ))}
       </div>
-      <span className="rounded-full border border-zinc-200 px-2.5 py-0.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
+      <span className="hidden rounded-full border border-zinc-200 px-2.5 py-0.5 text-xs font-medium text-zinc-700 sm:inline-flex dark:border-zinc-700 dark:text-zinc-300">
         {PRICE_LABEL[ingredient.price_band]}
       </span>
     </div>

@@ -8,6 +8,7 @@ import { gameReducer, initialGameState, lockedIds } from "@/lib/spin/game";
 import {
   BUTTON_NAMES,
   type Feedback,
+  MAX_RESPINS,
   REEL_KEYS,
   type ReelResult,
   TEST_IDS,
@@ -17,10 +18,10 @@ import {
 const SPIN_MS = [1100, 1600, 2100] as const;
 
 const PRIMARY_BUTTON =
-  "inline-flex min-h-11 items-center justify-center rounded-full bg-zinc-950 px-8 py-3 text-base font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-50 dark:text-zinc-950";
+  "inline-flex h-12 w-full max-w-xs items-center justify-center rounded-full bg-zinc-950 px-8 text-base font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-50 dark:text-zinc-950";
 
 const SECONDARY_BUTTON =
-  "inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 bg-white px-6 py-3 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900";
+  "inline-flex h-12 w-full max-w-xs items-center justify-center rounded-full border border-zinc-300 bg-white px-6 text-base font-medium text-zinc-900 transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900";
 
 function cookWithText(reels: readonly (ReelResult | null)[]): string {
   const [produce, protein, wildcard] = reels;
@@ -81,6 +82,10 @@ export function SlotMachine() {
     dispatch({ type: "reel_landed", index });
   }
 
+  function newRound() {
+    dispatch({ type: "new_round" });
+  }
+
   function toggleMute() {
     const next = !muted;
     feedback.setMuted(next);
@@ -89,91 +94,102 @@ export function SlotMachine() {
 
   const muteLabel = muted ? BUTTON_NAMES.unmute : BUTTON_NAMES.mute;
 
+  const primaryLabel = !landed
+    ? BUTTON_NAMES.pull
+    : canRespin
+      ? BUTTON_NAMES.respin
+      : BUTTON_NAMES.newRound;
+  const primaryAction = !landed
+    ? handleSpin
+    : canRespin
+      ? handleSpin
+      : newRound;
+  const primaryDisabled = spinning || (canRespin && allLocked);
+
   return (
-    <div className="flex w-full flex-col items-center gap-8">
-      <div className="flex w-full justify-end">
-        <button
-          type="button"
-          onClick={toggleMute}
-          aria-label={muteLabel}
-          title={muteLabel}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-zinc-300 bg-white px-3 text-lg text-zinc-700 transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900"
-        >
-          <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
-        </button>
+    <div className="flex w-full max-w-3xl flex-col items-center gap-6">
+      <div className="flex w-full flex-col gap-0">
+        <div className="mb-2 flex w-full justify-end">
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={muteLabel}
+            title={muteLabel}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-zinc-300 bg-white px-3 text-lg text-zinc-700 transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-900"
+          >
+            <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
+          </button>
+        </div>
+
+        <ul className="grid w-full grid-cols-3 items-stretch gap-2 sm:gap-6">
+          {REEL_KEYS.map((reel, index) => (
+            <li key={reel} className="flex min-w-0">
+              <Reel
+                reel={reel}
+                result={state.reels[index]}
+                spinning={
+                  state.spinningReels[index] &&
+                  !state.awaiting &&
+                  state.reels[index] !== null
+                }
+                spinMs={SPIN_MS[index]}
+                locked={state.locked[index]}
+                canLock={canRespin}
+                onToggleLock={() => dispatch({ type: "toggle_lock", index })}
+                onLanded={() => handleLanded(index)}
+              />
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <ul className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-        {REEL_KEYS.map((reel, index) => (
-          <li key={reel} className="flex">
-            <Reel
-              reel={reel}
-              result={state.reels[index]}
-              spinning={
-                state.spinningReels[index] &&
-                !state.awaiting &&
-                state.reels[index] !== null
-              }
-              spinMs={SPIN_MS[index]}
-              locked={state.locked[index]}
-              canLock={canRespin}
-              onToggleLock={() => dispatch({ type: "toggle_lock", index })}
-              onLanded={() => handleLanded(index)}
-            />
-          </li>
-        ))}
-      </ul>
-
-      <div className="flex min-h-24 flex-col items-center justify-start gap-3">
+      {/* Fixed-height rows so the primary button stays put across idle, spinning and landed. */}
+      <div className="flex w-full flex-col items-center gap-3">
         <p
           data-testid={TEST_IDS.status}
           aria-live="polite"
-          className="min-h-6 text-base font-medium text-zinc-800 dark:text-zinc-200"
+          className="flex min-h-12 items-center justify-center text-center text-base font-medium text-zinc-800 dark:text-zinc-200"
         >
           {spinning ? "Spinning…" : landed ? cookWithText(state.reels) : ""}
         </p>
 
         <p
           data-testid={TEST_IDS.respinsLeft}
-          className="min-h-5 text-sm text-zinc-500 dark:text-zinc-400"
+          className="flex h-5 items-center text-sm text-zinc-500 dark:text-zinc-400"
         >
-          {landed || state.reels.some((reel) => reel !== null)
+          {landed || state.respinsLeft < MAX_RESPINS
             ? `${state.respinsLeft} ${state.respinsLeft === 1 ? "re-spin" : "re-spins"} left`
             : ""}
         </p>
 
-        <div className="flex flex-col items-center gap-3">
-          {!landed || canRespin ? (
-            <button
-              type="button"
-              onClick={handleSpin}
-              disabled={spinning || (canRespin && allLocked)}
-              className={PRIMARY_BUTTON}
-            >
-              {landed ? BUTTON_NAMES.respin : BUTTON_NAMES.pull}
-            </button>
-          ) : null}
+        <button
+          type="button"
+          onClick={primaryAction}
+          disabled={primaryDisabled}
+          className={PRIMARY_BUTTON}
+        >
+          {primaryLabel}
+        </button>
 
-          {landed ? (
-            <button
-              type="button"
-              onClick={() => dispatch({ type: "new_round" })}
-              className={canRespin ? SECONDARY_BUTTON : PRIMARY_BUTTON}
+        {canRespin ? (
+          <button type="button" onClick={newRound} className={SECONDARY_BUTTON}>
+            {BUTTON_NAMES.newRound}
+          </button>
+        ) : (
+          <div aria-hidden="true" className="h-12 w-full max-w-xs" />
+        )}
+
+        <div className="flex min-h-5 items-center justify-center">
+          {state.error ? (
+            <p
+              role="alert"
+              data-testid={TEST_IDS.error}
+              className="text-sm text-red-600 dark:text-red-400"
             >
-              {BUTTON_NAMES.newRound}
-            </button>
+              {state.error}
+            </p>
           ) : null}
         </div>
-
-        {state.error ? (
-          <p
-            role="alert"
-            data-testid={TEST_IDS.error}
-            className="text-sm text-red-600 dark:text-red-400"
-          >
-            {state.error}
-          </p>
-        ) : null}
       </div>
     </div>
   );

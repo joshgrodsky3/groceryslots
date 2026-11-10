@@ -17,7 +17,7 @@ import {
   TEST_IDS,
 } from "@/lib/spin/types";
 
-/** One ingredient row in the scrolling strip, in px (h-16). */
+/** One ingredient row in the scrolling strip, in px (same at every breakpoint). */
 const ROW_PX = 64;
 /** Three visible rows: the landing ingredient sits in the middle one. */
 const WINDOW_PX = ROW_PX * 3;
@@ -108,7 +108,7 @@ export function Reel({
     body = (
       <motion.div
         key={keyFor(result)}
-        className="h-full"
+        className="h-full w-full"
         initial={{ opacity: 0, scale: reduce ? 1 : 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={
@@ -132,43 +132,51 @@ export function Reel({
     <section
       data-testid={TEST_IDS.reel(reel)}
       aria-label={label}
-      className={`flex flex-col gap-3 rounded-2xl border bg-white p-4 shadow-sm dark:bg-zinc-950 ${
+      className={`flex w-full min-w-0 flex-col gap-3 rounded-2xl border bg-white p-2 shadow-sm sm:p-4 dark:bg-zinc-950 ${
         locked
           ? "border-amber-400 ring-2 ring-amber-400/70 dark:border-amber-400"
           : "border-zinc-200 dark:border-zinc-800"
       }`}
     >
-      <div className="flex h-6 items-center justify-between gap-2">
-        <span className="text-sm font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <div className="flex h-6 min-w-0 items-center justify-between gap-1">
+        <span className="min-w-0 truncate text-[11px] font-medium uppercase tracking-wider text-zinc-500 sm:text-sm dark:text-zinc-400">
           {label}
         </span>
         {locked ? (
-          <span className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-zinc-950">
-            Locked
-          </span>
+          <>
+            <span className="shrink-0 text-xs sm:hidden">
+              <span aria-hidden="true">🔒</span>
+              <span className="sr-only">Locked</span>
+            </span>
+            <span className="hidden shrink-0 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-zinc-950 sm:inline-block">
+              Locked
+            </span>
+          </>
         ) : null}
       </div>
 
       <div
-        className="relative overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900"
+        className="relative w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900"
         style={{ height: WINDOW_PX }}
       >
         {body}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-2 z-10 rounded-lg border-y-2 border-amber-400/80"
-          style={{ top: ROW_PX, height: ROW_PX }}
-        />
+        {useStrip ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-2 z-10 rounded-lg border-y-2 border-amber-400/80"
+            style={{ top: ROW_PX, height: ROW_PX }}
+          />
+        ) : null}
       </div>
 
-      <div className="flex h-9 items-center justify-center">
+      <div className="flex h-11 w-full items-center justify-center sm:h-9">
         {canLock ? (
           <button
             type="button"
             aria-pressed={locked}
             aria-label={lockName}
             onClick={onToggleLock}
-            className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
+            className={`min-h-11 w-full rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors sm:min-h-0 sm:w-auto ${
               locked
                 ? "border-amber-400 bg-amber-400 text-zinc-950 hover:bg-amber-300"
                 : "border-zinc-300 text-zinc-700 hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500"
@@ -184,7 +192,7 @@ export function Reel({
 
 function Placeholder() {
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex h-full w-full items-center justify-center">
       <span
         aria-hidden="true"
         className="text-7xl font-bold leading-none text-zinc-300 dark:text-zinc-700"
@@ -215,7 +223,7 @@ function ScrollingStrip({
   return (
     <motion.div
       aria-hidden="true"
-      className="absolute inset-x-0 top-0"
+      className="absolute inset-x-0 top-0 w-full"
       initial={{ y: 0 }}
       animate={{ y: [0, overshootY, restY] }}
       transition={{
@@ -228,11 +236,13 @@ function ScrollingStrip({
       {rows.map((row, position) => (
         <div
           key={`${position}-${row.id}`}
-          className="flex items-center gap-3 px-4"
+          className="flex w-full items-center justify-center gap-3 px-2 sm:px-4"
           style={{ height: ROW_PX }}
         >
-          <span className="text-3xl leading-none">{row.emoji ?? "🛒"}</span>
-          <span className="truncate text-base font-medium text-zinc-800 dark:text-zinc-200">
+          <span className="text-4xl leading-none sm:text-3xl">
+            {row.emoji ?? "🛒"}
+          </span>
+          <span className="hidden min-w-0 truncate text-base font-medium text-zinc-800 sm:block dark:text-zinc-200">
             {row.name}
           </span>
         </div>
