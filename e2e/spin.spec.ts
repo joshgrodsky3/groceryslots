@@ -47,6 +47,11 @@ test("pull lands three ingredients and offers two re-spins", async ({
 
   await page.getByRole("button", { name: BUTTON_NAMES.pull }).click();
 
+  // With motion on, the scrolling strip is rendered while reels spin.
+  await expect(page.getByTestId("reel-strip").first()).toBeVisible({
+    timeout: 5_000,
+  });
+
   await expectLanded(page);
   await expect(page.getByTestId(TEST_IDS.respinsLeft)).toHaveText(
     "2 re-spins left",
@@ -117,7 +122,16 @@ test.describe("reduced motion", () => {
 
   test("pull still lands with reduced motion", async ({ page }) => {
     await page.goto("/");
-    await pull(page);
+    await page.getByRole("button", { name: BUTTON_NAMES.pull }).click();
+
+    // No scrolling strip under reduced motion, and the names land quickly.
+    await expect(page.getByTestId("reel-strip")).toHaveCount(0);
+    for (const reel of REEL_KEYS) {
+      await expect(page.getByTestId(TEST_IDS.reelName(reel))).toHaveText(/\S/, {
+        timeout: 1_500,
+      });
+    }
+    await expect(page.getByTestId("reel-strip")).toHaveCount(0);
     await expect(page.getByTestId(TEST_IDS.respinsLeft)).toHaveText(
       "2 re-spins left",
     );
@@ -132,6 +146,18 @@ test.describe("phone viewport", () => {
   }) => {
     await page.goto("/");
     await pull(page);
+
+    const viewportWidth = 375;
+    for (const reel of REEL_KEYS) {
+      const wrapper = page.getByTestId(TEST_IDS.reel(reel));
+      await expect(wrapper).toBeVisible();
+      const box = await wrapper.boundingBox();
+      expect(box).not.toBeNull();
+      if (box) {
+        expect(box.x).toBeGreaterThanOrEqual(0);
+        expect(box.x + box.width).toBeLessThanOrEqual(viewportWidth);
+      }
+    }
 
     const fitsWidth = await page.evaluate(
       () =>

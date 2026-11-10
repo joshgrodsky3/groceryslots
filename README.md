@@ -42,6 +42,7 @@ Open http://localhost:3000.
 - First run only: `pnpm exec playwright install chromium` downloads the browser. CI does this in the `e2e` job.
 - If something is already running on port 3000, Playwright reuses it locally (not on CI), so stop the dev server first to be sure the fixture is active.
 - Failed CI runs upload `test-results/` as an artifact.
+- Never set `SPIN_FIXTURE` on Vercel or any real deployment: it replaces the real database with 12 sample ingredients.
 
 ## Docs
 
