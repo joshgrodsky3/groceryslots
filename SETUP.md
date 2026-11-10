@@ -12,7 +12,16 @@ git config --global user.name "Your Name"
 git config --global user.email "you@example.com"
 ```
 
-Check Node with `node --version`; it should print `v22`. If it still shows an older version, run `brew link --overwrite --force node@22`. If you use nvm, run `nvm install 22` instead.
+Homebrew does not put `node@22` on your PATH. Add it, then install pnpm (recent Node builds no longer include corepack):
+
+```bash
+echo 'export PATH="$(brew --prefix node@22)/bin:$PATH"' >> ~/.bash_profile   # zsh users: ~/.zshrc
+source ~/.bash_profile
+node --version              # should print v22.x
+npm install -g pnpm@10.28.0
+```
+
+If you use nvm instead, run `nvm install 22`, then the same `npm install -g pnpm@10.28.0`.
 
 ## 1. Run it locally (about 3 minutes)
 
@@ -20,7 +29,6 @@ Check Node with `node --version`; it should print `v22`. If it still shows an ol
 
    ```bash
    cd ~/Desktop/claudework/grocery-slots
-   corepack enable pnpm
    pnpm install
    pnpm dev
    ```
@@ -38,7 +46,7 @@ Check Node with `node --version`; it should print `v22`. If it still shows an ol
    git init -b main
    git add .
    git commit -m "Week 1: scaffold, schema, CI"
-   git remote add origin https://github.com/<your-username>/grocery-slots.git
+   git remote add origin https://github.com/joshgrodsky3/groceryslots.git
    git push -u origin main
    ```
 
@@ -64,25 +72,24 @@ Check Node with `node --version`; it should print `v22`. If it still shows an ol
 
 ## 4. Apply the schema (about 5 minutes)
 
-1. Install and sign in to the Supabase CLI. This needs Homebrew (brew.sh):
+1. Sign in to the Supabase CLI. Homebrew can't install it on macOS 14, so run it through npx (no install needed):
 
    ```bash
-   brew install supabase/tap/supabase
-   supabase login
+   cd ~/Desktop/claudework/grocery-slots
+   npx supabase login
    ```
 
 2. Set up the repo. Answer any `supabase init` prompts with the defaults. It adds `supabase/config.toml`:
 
    ```bash
-   cd ~/Desktop/claudework/grocery-slots
-   supabase init
+   npx supabase init
    ```
 
 3. Link to your project, then create the tables and policies. The project ref is the part of the Project URL before `.supabase.co`. The link command asks for the database password from section 3:
 
    ```bash
-   supabase link --project-ref <project-ref>
-   supabase db push
+   npx supabase link --project-ref <project-ref>
+   npx supabase db push
    ```
 
 4. Load the seed data. Run the command below, paste the output into the Supabase **SQL Editor**, and click **Run**. Then open **Table Editor**, select `ingredients`, and confirm it shows 100 rows.
