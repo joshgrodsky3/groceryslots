@@ -42,3 +42,8 @@ next-env.d.ts
 
 # local env files: .env.example stays committed
 !.env.example
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
