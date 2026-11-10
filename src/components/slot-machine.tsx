@@ -43,11 +43,16 @@ export function SlotMachine() {
   }, [feedback]);
 
   useEffect(() => {
-    if (previousPhase.current === "spinning" && state.phase === "landed") {
+    // A failed re-spin also ends in "landed" (with the old results); only a completed spin plays the chime.
+    if (
+      previousPhase.current === "spinning" &&
+      state.phase === "landed" &&
+      state.error === null
+    ) {
       feedback.done();
     }
     previousPhase.current = state.phase;
-  }, [state.phase, feedback]);
+  }, [state.phase, state.error, feedback]);
 
   const landed = state.phase === "landed";
   const spinning = state.phase === "spinning";
