@@ -14,6 +14,12 @@ const INVALID = "Invalid spin request.";
 const NOT_CONNECTED = "The ingredient database isn't connected yet.";
 const LOAD_FAILED = "Couldn't load ingredients. Try again.";
 
+/** How long a loaded ingredient pool is reused before querying again. */
+const POOL_TTL_MS = 5 * 60 * 1000;
+
+/** Module-level cache of the database pool. Never used in fixture mode. */
+let poolCache: { pool: Ingredient[]; expiresAt: number } | null = null;
+
 function isLockedId(value: unknown): value is number | null {
   return (
     value === null ||
@@ -29,6 +35,24 @@ function parseLocked(request: unknown): LockedIds | null {
   return [locked[0], locked[1], locked[2]];
 }
 
+async function loadPool(): Promise<Ingredient[] | null> {
+  const cached = poolCache;
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.pool;
+  }
+
+  const { data, error } = await createPublicClient()
+    .from("ingredients")
+    .select("id, name, category, aisle, difficulty, emoji, price_band");
+  if (error || !data || data.length === 0) {
+    return null;
+  }
+
+  const pool = data as Ingredient[];
+  poolCache = { pool, expiresAt: Date.now() + POOL_TTL_MS };
+  return pool;
+}
+
 export async function spin(request: SpinRequest): Promise<SpinResponse> {
   const locked = parseLocked(request);
   if (!locked) {
@@ -36,17 +60,14 @@ export async function spin(request: SpinRequest): Promise<SpinResponse> {
   }
 
   try {
-    let pool: Ingredient[];
+    let pool: Ingredient[] | null;
     if (process.env.SPIN_FIXTURE === "1") {
       pool = FIXTURE_POOL;
     } else {
-      const { data, error } = await createPublicClient()
-        .from("ingredients")
-        .select("id, name, category, aisle, difficulty, emoji, price_band");
-      if (error || !data || data.length === 0) {
+      pool = await loadPool();
+      if (!pool) {
         return { ok: false, error: LOAD_FAILED };
       }
-      pool = data as Ingredient[];
     }
 
     return { ok: true, reels: pickReels(pool, locked) };

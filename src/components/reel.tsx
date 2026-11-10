@@ -176,7 +176,7 @@ export function Reel({
             aria-pressed={locked}
             aria-label={lockName}
             onClick={onToggleLock}
-            className={`min-h-11 w-full rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors sm:min-h-0 sm:w-auto ${
+            className={`min-h-11 w-full rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 sm:min-h-0 sm:w-auto ${
               locked
                 ? "border-amber-400 bg-amber-400 text-zinc-950 hover:bg-amber-300"
                 : "border-zinc-300 text-zinc-700 hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500"
@@ -222,6 +222,7 @@ function ScrollingStrip({
 
   return (
     <motion.div
+      data-testid="reel-strip"
       aria-hidden="true"
       className="absolute inset-x-0 top-0 w-full"
       initial={{ y: 0 }}

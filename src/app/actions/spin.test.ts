@@ -30,7 +30,10 @@ vi.mock("@/lib/spin/fixture", () => ({
   ] satisfies Ingredient[],
 }));
 
-import { spin } from "@/app/actions/spin";
+type SpinModule = typeof import("@/app/actions/spin");
+
+// Re-imported before each test so the module-level pool cache starts empty.
+let spin: SpinModule["spin"];
 
 const POOL: Ingredient[] = [
   {
@@ -80,14 +83,17 @@ function setQuery(result: { data: unknown; error: unknown }) {
 
 const ORIGINAL_FIXTURE = process.env.SPIN_FIXTURE;
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
+  vi.resetModules();
+  ({ spin } = await import("@/app/actions/spin"));
   delete process.env.SPIN_FIXTURE;
   mocks.pickReels.mockReturnValue(RESULT);
   setQuery({ data: POOL, error: null });
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   if (ORIGINAL_FIXTURE === undefined) {
     delete process.env.SPIN_FIXTURE;
   } else {
@@ -214,6 +220,73 @@ describe("spin server action", () => {
     expect(response).toEqual({
       ok: false,
       error: "The ingredient database isn't connected yet.",
+    });
+  });
+
+  describe("pool cache", () => {
+    it("reuses the loaded pool within the TTL", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+
+      await spin({ locked: [null, null, null] });
+      vi.setSystemTime(new Date("2026-01-01T00:04:59Z"));
+      const second = await spin({ locked: [1, null, null] });
+
+      expect(second.ok).toBe(true);
+      expect(mocks.createPublicClient).toHaveBeenCalledTimes(1);
+      expect(mocks.pickReels).toHaveBeenCalledTimes(2);
+      expect(mocks.pickReels).toHaveBeenLastCalledWith(POOL, [1, null, null]);
+    });
+
+    it("loads again after the TTL expires", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+
+      await spin({ locked: [null, null, null] });
+      vi.setSystemTime(new Date("2026-01-01T00:05:00Z"));
+      await spin({ locked: [null, null, null] });
+
+      expect(mocks.createPublicClient).toHaveBeenCalledTimes(2);
+    });
+
+    it("does not cache a failed load", async () => {
+      setQuery({ data: null, error: { message: "boom" } });
+      await expect(spin({ locked: [null, null, null] })).resolves.toEqual({
+        ok: false,
+        error: "Couldn't load ingredients. Try again.",
+      });
+
+      setQuery({ data: POOL, error: null });
+      await expect(spin({ locked: [null, null, null] })).resolves.toMatchObject(
+        { ok: true },
+      );
+      expect(mocks.createPublicClient).toHaveBeenCalledTimes(2);
+    });
+
+    it("does not cache an empty result", async () => {
+      setQuery({ data: [], error: null });
+      await spin({ locked: [null, null, null] });
+
+      setQuery({ data: POOL, error: null });
+      await expect(spin({ locked: [null, null, null] })).resolves.toMatchObject(
+        { ok: true },
+      );
+      expect(mocks.createPublicClient).toHaveBeenCalledTimes(2);
+    });
+
+    it("never caches fixture mode", async () => {
+      process.env.SPIN_FIXTURE = "1";
+      await spin({ locked: [null, null, null] });
+      delete process.env.SPIN_FIXTURE;
+
+      await spin({ locked: [null, null, null] });
+
+      expect(mocks.createPublicClient).toHaveBeenCalledTimes(1);
+      expect(mocks.pickReels).toHaveBeenLastCalledWith(POOL, [
+        null,
+        null,
+        null,
+      ]);
     });
   });
 });
