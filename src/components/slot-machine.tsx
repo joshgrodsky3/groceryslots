@@ -15,7 +15,7 @@ import {
 } from "@/lib/spin/types";
 
 /** How long each reel scrolls, left to right, so they stop one after another. */
-const SPIN_MS = [1800, 2600, 3400] as const;
+const SPIN_MS = [3000, 4000, 5000] as const;
 
 const PRIMARY_BUTTON =
   "inline-flex h-12 w-full max-w-xs items-center justify-center rounded-full bg-zinc-950 px-8 text-base font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-50 dark:text-zinc-950";
