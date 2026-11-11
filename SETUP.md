@@ -107,12 +107,35 @@ Fallback without the CLI: in the SQL Editor, paste and run `supabase/migrations/
 
 From now on, every push to `main` redeploys the site, and every pull request gets its own preview URL.
 
+## Email sign-in codes (about 5 minutes)
+
+Sign-in emails a one-time code instead of a password. Set this up once in the Supabase dashboard for the `grocery-slots` project.
+
+1. Go to **Authentication > Email Templates**. Open **Magic Link** and set:
+   - Subject: `Your Grocery Slots code`
+   - Body:
+
+     ```html
+     <h2>Your code</h2>
+     <p>Enter this code to sign in: <strong>{{ .Token }}</strong></p>
+     ```
+
+   Open **Confirm signup** and use the same subject and body. The `{{ .Token }}` placeholder is what puts the code in the email.
+2. Go to **Authentication > Providers > Email**. Keep email enabled. Leave **Confirm email** on or off; either works for codes.
+3. Go to **Authentication > URL Configuration**. Set **Site URL** to your Vercel production URL, for example `https://grocery-slots.vercel.app`.
+
+Notes:
+
+- The built-in email sender allows only a few emails per hour per project. That is enough for testing, but a busy day of sign-ins will hit the limit and users see "Too many requests". When you need more, connect a custom SMTP provider such as Resend under **Authentication > Emails > SMTP Settings**.
+- Codes are 6 to 10 digits, depending on the project setting. The app accepts either.
+
 ## 6. Verify (about 1 minute)
 
 - [ ] The page loads at http://localhost:3000 with `pnpm dev`
 - [ ] The GitHub Actions run for `main` is green
 - [ ] The Supabase `ingredients` table has 145 rows
 - [ ] The Vercel URL loads
+- [ ] Signing in on the Vercel URL emails a code
 
 ## What's in the repo
 

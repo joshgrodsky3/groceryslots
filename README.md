@@ -2,6 +2,8 @@
 
 A slot-machine cooking challenge for two. Pull the lever: three reels land on random grocery ingredients, and both cooks must use all three.
 
+Sign in with an emailed one-time code (no password), then create or join a kitchen with an invite code.
+
 ## Stack
 
 - Next.js 16 (App Router)
