@@ -92,7 +92,7 @@ If you use nvm instead, run `nvm install 22`, then the same `npm install -g pnpm
    npx supabase db push
    ```
 
-4. Load the seed data. Run the command below, paste the output into the Supabase **SQL Editor**, and click **Run**. Then open **Table Editor**, select `ingredients`, and confirm it shows 100 rows.
+4. Load the seed data. Run the command below, paste the output into the Supabase **SQL Editor**, and click **Run**. Then open **Table Editor**, select `ingredients`, and confirm it shows 145 rows.
 
    ```bash
    pbcopy < supabase/seed.sql
@@ -111,7 +111,7 @@ From now on, every push to `main` redeploys the site, and every pull request get
 
 - [ ] The page loads at http://localhost:3000 with `pnpm dev`
 - [ ] The GitHub Actions run for `main` is green
-- [ ] The Supabase `ingredients` table has 100 rows
+- [ ] The Supabase `ingredients` table has 145 rows
 - [ ] The Vercel URL loads
 
 ## What's in the repo
@@ -121,6 +121,6 @@ From now on, every push to `main` redeploys the site, and every pull request get
 | `src/app/page.tsx` | Home page (placeholder reels for now) |
 | `src/lib/supabase/` | Supabase client helpers |
 | `supabase/migrations/` | Database schema, tables and policies |
-| `supabase/seed.sql` | 100 starter ingredients, 25 per category |
+| `supabase/seed.sql` | 145 starter ingredients |
 | `.github/workflows/ci.yml` | CI: install, typecheck, lint, build |
 | `docs/` | Project docs, including the implementation plan |

@@ -1,5 +1,4 @@
--- Grocery Slots: seed ingredients (100 rows, 25 per category)
--- Difficulty spread: 1 -> 20 rows, 2 -> 30, 3 -> 25, 4 -> 15, 5 -> 10.
+-- Grocery Slots: seed ingredients (145 rows: 38 produce, 37 protein, 33 pantry, 37 wildcard)
 -- Safe to re-run: existing names are skipped.
 
 insert into public.ingredients (name, category, aisle, difficulty, emoji, price_band) values
@@ -106,5 +105,51 @@ insert into public.ingredients (name, category, aisle, difficulty, emoji, price_
   ('Yuzu kosho', 'wildcard', 'International', 4, '🍋', 'splurge'),
   ('Black garlic', 'wildcard', 'International', 5, '🧄', 'splurge'),
   ('Fermented tofu', 'wildcard', 'International', 5, '🟨', 'mid'),
-  ('Shrimp paste', 'wildcard', 'International', 5, '🦐', 'cheap')
+  ('Shrimp paste', 'wildcard', 'International', 5, '🦐', 'cheap'),
+  -- more variety
+  ('Sweet corn', 'produce', 'Produce', 1, '🌽', 'cheap'),
+  ('Cabbage', 'produce', 'Produce', 1, '🥬', 'cheap'),
+  ('Cucumber', 'produce', 'Produce', 1, '🥒', 'cheap'),
+  ('Butternut squash', 'produce', 'Produce', 3, '🎃', 'mid'),
+  ('Asparagus', 'produce', 'Produce', 2, '🌿', 'mid'),
+  ('Green beans', 'produce', 'Produce', 1, '🫛', 'cheap'),
+  ('Fennel', 'produce', 'Produce', 3, '🌿', 'mid'),
+  ('Poblano peppers', 'produce', 'Produce', 3, '🫑', 'mid'),
+  ('Baby bok choy', 'produce', 'Produce', 2, '🥬', 'mid'),
+  ('Radishes', 'produce', 'Produce', 1, '🌱', 'cheap'),
+  ('Pineapple', 'produce', 'Produce', 2, '🍍', 'mid'),
+  ('Mango', 'produce', 'Produce', 2, '🥭', 'mid'),
+  ('Artichoke hearts', 'produce', 'Produce', 4, '🌿', 'splurge'),
+  ('Pork chops', 'protein', 'Meat & Seafood', 2, '🥩', 'mid'),
+  ('Rotisserie chicken', 'protein', 'Deli', 1, '🍗', 'mid'),
+  ('Flank steak', 'protein', 'Meat & Seafood', 3, '🥩', 'splurge'),
+  ('Pork tenderloin', 'protein', 'Meat & Seafood', 3, '🥩', 'mid'),
+  ('Shrimp', 'protein', 'Meat & Seafood', 2, '🍤', 'mid'),
+  ('Cod fillets', 'protein', 'Meat & Seafood', 3, '🐟', 'mid'),
+  ('Canned tuna', 'protein', 'Canned Goods', 1, '🐟', 'cheap'),
+  ('Extra-firm tofu', 'protein', 'Refrigerated', 2, '🟨', 'cheap'),
+  ('Black beans', 'protein', 'Canned Goods', 1, '🫘', 'cheap'),
+  ('Red lentils', 'protein', 'Dry Goods', 1, '🫘', 'cheap'),
+  ('Hot dogs', 'protein', 'Meat & Seafood', 1, '🌭', 'cheap'),
+  ('Chorizo', 'protein', 'Meat & Seafood', 2, '🌶️', 'mid'),
+  ('Black beans (dry)', 'pantry', 'Dry Goods', 2, '🫘', 'cheap'),
+  ('Pearl barley', 'pantry', 'Dry Goods', 2, '🌾', 'cheap'),
+  ('Polenta', 'pantry', 'Dry Goods', 2, '🌽', 'cheap'),
+  ('Soy sauce', 'pantry', 'Pantry', 1, '🍶', 'cheap'),
+  ('Peanuts', 'pantry', 'Pantry', 1, '🥜', 'cheap'),
+  ('Honey', 'pantry', 'Pantry', 1, '🍯', 'mid'),
+  ('Dijon mustard', 'pantry', 'Pantry', 1, '🟡', 'cheap'),
+  ('Dried cranberries', 'pantry', 'Pantry', 1, '🍒', 'mid'),
+  ('Nutella', 'wildcard', 'Pantry', 2, '🍫', 'mid'),
+  ('Instant ramen', 'wildcard', 'International', 1, '🍜', 'cheap'),
+  ('Canned pumpkin', 'wildcard', 'Canned Goods', 2, '🎃', 'cheap'),
+  ('Cream cheese', 'wildcard', 'Dairy', 1, '🧀', 'cheap'),
+  ('Goat cheese', 'wildcard', 'Dairy', 2, '🧀', 'mid'),
+  ('Sun-dried tomatoes', 'wildcard', 'Pantry', 3, '🍅', 'mid'),
+  ('Coconut cream', 'wildcard', 'International', 3, '🥥', 'mid'),
+  ('Pomegranate molasses', 'wildcard', 'International', 4, '🍷', 'splurge'),
+  ('Nori sheets', 'wildcard', 'International', 3, '🟩', 'mid'),
+  ('Candied ginger', 'wildcard', 'Pantry', 4, '🫚', 'mid'),
+  ('Saffron', 'wildcard', 'Pantry', 5, '🌼', 'splurge'),
+  ('Cotija cheese', 'wildcard', 'Dairy', 3, '🧀', 'mid')
 on conflict (name) do nothing;
